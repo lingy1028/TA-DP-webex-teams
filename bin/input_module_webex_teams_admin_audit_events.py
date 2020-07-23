@@ -173,10 +173,11 @@ def collect_events(helper, ew):
     # Overrride once to get old events
     #last_run = '2020-07-10T09:34:00.000Z'
     
-    
     if last_run is None:
         last_run = current_run
-
+        # We need a small offset as API does not allow this to be the same
+        current_run_epoch =  int(mytime.time())*1000
+        current_run = datetime.datetime.utcnow().isoformat()[:-3] + 'Z'
     
     # Access Token Management
 
