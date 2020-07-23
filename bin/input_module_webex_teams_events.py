@@ -356,7 +356,7 @@ def collect_events(helper, ew):
                         data["data"].update({"roomTitle": room_title})
 
                         
-                    elif room.status_code == 404:
+                    elif room_response.status_code == 404:
                         helper.log_error("room status_code: {}. Not found. Skipping.".format(room_response.status_code))
                         continue                                 
                             
