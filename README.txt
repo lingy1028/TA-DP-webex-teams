@@ -81,12 +81,15 @@ Events will be created with the webex:teams:adminaudit:events sourcetype.
 
 ## Release Notes
 
+* 1.0.1 / 2020-08-04 Bugfix Release
 * 1.0.0 / 2020-07-23 First Release
-
+ 
 ## Change Notes
 
 * 2020-07-23 mbo
   * First Release
+* 2020-08-04 mbo
+  * Fixed in issue with too many token refreshes
   
 ## License
 

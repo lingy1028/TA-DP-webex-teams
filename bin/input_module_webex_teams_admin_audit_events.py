@@ -215,7 +215,7 @@ def collect_events(helper, ew):
             
             helper.log_debug("access_token: {}".format(access_token))
     
-            access_token_expiration_time = current_run_epoch + access_token_expires_in
+            access_token_expiration_time = current_run_epoch + access_token_expires_in*1000
             helper.log_debug("current_run_epoch: {}".format(current_run_epoch))
             helper.log_debug("access_token_expires_in: {}".format(access_token_expires_in))
             helper.log_debug("access_token_expiration_time: {}".format(access_token_expiration_time))

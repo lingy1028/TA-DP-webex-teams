@@ -1,11 +1,11 @@
 {
-  "schemaVersion": "1.0.0",
+  "schemaVersion": "1.0.1",
   "info": {
     "title": "Technology Add-on for Webex Teams",
     "id": {
       "group": null,
       "name": "TA-DP-webex-teams",
-      "version": "1.0.0"
+      "version": "1.0.1"
     },
     "author": [
       {
