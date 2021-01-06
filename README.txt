@@ -2,7 +2,7 @@
 
 Authors: Datapunctum GmbH
 Description: Webex Teams Modular Input
-Version: 1.0.0
+Version: 1.0.1
 
 ## Introduction
 
