@@ -11,6 +11,7 @@ proxy_rdns =
 loglevel = 
 
 [additional_parameters]
+redirect_uri = 
 client_id = 
 client_secret = 
 refresh_token_1 = 

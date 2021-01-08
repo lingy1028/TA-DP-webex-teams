@@ -90,8 +90,17 @@ fields_logging = [
 ]
 model_logging = RestModel(fields_logging, name='logging')
 
-
+# TODO Must change line:101 to be regex="(^https:\/\/[^\s]+)"
 fields_additional_parameters = [
+    field.RestField(
+        'redirect_uri',
+        required=False,
+        encrypted=False,
+        default='',
+        validator=validator.Pattern(
+            regex="(^https:\/\/[^\s]+)",
+        )
+    ),
     field.RestField(
         'client_id',
         required=True,

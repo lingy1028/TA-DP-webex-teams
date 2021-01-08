@@ -149,6 +149,24 @@
                     "title": "Add-on Settings",
                     "entity": [
                         {
+                            "field": "redirect_uri",
+                            "label": "Redirect URI",
+                            "type": "text",
+                            "help": "Must match the Redirect URI defined in your Webex Teams Integration configuration. For example, https://{{hostname}}/en-US/splunkd/__raw/services/webex-teams-oauth",
+                            "required": false,
+                            "defaultValue": "",
+                            "encrypted": false,
+                            "validators": [{
+                                "type": "string",
+                                "minLength": 0,
+                                "maxLength": 8192,
+                                "errorMsg": "Max length of password is 8192"
+                            }],
+                            "options": {
+                                "placeholder": "https://{{hostname}}/en-US/splunkd/__raw/services/webex-teams-oauth"
+                            }
+                        },
+                        {
                             "field": "client_id",
                             "label": "Client ID",
                             "type": "text",
@@ -185,7 +203,7 @@
                             "field": "refresh_token_1",
                             "label": "Refresh Token 1",
                             "type": "text",
-                            "help": "",
+                            "help": "Generate the Refresh Token by clicking the below button",
                             "required": true,
                             "defaultValue": "",
                             "encrypted": true,
