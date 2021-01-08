@@ -259,6 +259,7 @@ def collect_events(helper, ew):
     method = "GET"
     
     helper.log_debug("headers: {}".format(headers))
+    helper.log_debug("events_url: {}".format(events_url))
     
     
     paging = True
@@ -280,6 +281,7 @@ def collect_events(helper, ew):
 
             response_headers = response.headers
             helper.log_debug("response_headers: {}.".format(response_headers))
+            helper.log_error("response: {}".format(response_dict))
 
             for data in response_dict.get("items"):
                 #helper.log_debug("data: {}".format(json.dumps(data)))
