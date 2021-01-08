@@ -1,0 +1,12 @@
+.DS_Store
+*.swp
+*.pyc
+.vscode
+__pycache__
+
+# Splunk app local files
+local
+# (Normally we'd exclude the entire "metadata" directory.
+#  However we must preserve metadata/default.meta so that eventgen works.)
+local.meta
+README.txt
