@@ -5,81 +5,10 @@ import json
 import logging
 import requests
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "lib"))
-import splunklib.client as client
-# from splunk_storage_passwords import SplunkStoragePasswords
+# import splunklib.client as client
+from splunk_storage_passwords import SplunkStoragePasswords 
 
 SPLUNK_DEST_APP = 'TA-DP-webex-teams'
-
-# class SplunkStoragePasswords:
-#     """[summary]
-#     """
-#     def __init__(self, session_key, realm, app_name):
-#         """[summary]
-
-#         Args:
-#             session_key ([type]): [description]
-#             realm ([type]): [description]
-#             username ([type]): [description]
-#             client_secret ([type]): [description]
-#             app_name ([type]): [description]
-#         """
-#         self.session_key = session_key
-#         self.realm = realm
-#         self.app_name = app_name
-#         # self.splunk_service = client.connect(token=session_key, app=app_name)
-#         self.storage_passwords = client.connect(token=session_key, app=app_name).storage_passwords
-        
-
-#     def get(self, cred_name):
-#         """
-#         get cred from password storage endpoint
-#         """
-#         logging.debug(
-#             "[-] get password/storage for {}: {}".format(self.realm, cred_name))
-#         # storage_passwords = splunkService.storage_passwords
-#         try:
-#             returned_credential = [k for k in self.storage_passwords if k.content.get(
-#                 'realm') == self.realm and k.content.get('username') == cred_name]
-#         except Exception as e:
-#             logging.info(
-#                 "[-] Failed to get {}:{} from password storage. Error Message:  {}".format(self.realm, cred_name, repr(e)))
-#             raise e
-
-#         if len(returned_credential) == 0:
-#             return None
-
-#         else:
-#             returned_credential = returned_credential[0]
-#             return returned_credential.content.get('clear_password')
-
-#     def delete(self, cred_name):
-#         """
-#         delete cred from password storage endpoint
-#         """
-#         if self.get(cred_name):
-#             try:
-#                 self.storage_passwords.delete(cred_name, self.realm)
-#                 logging.debug(
-#                     "[-] Deleted old {}:{}".format(self.realm, cred_name))
-#             except Exception as e:
-#                 logging.info(
-#                     "[-] Failed to delete {}:{} from password storage. Error Message:  {}".format(self.realm, cred_name, repr(e)))
-#                 raise e
-
-#     def update(self, cred_name, cred_password):
-#         """
-#         update cred from password storage endpoint
-#         """
-#         self.delete(cred_name)
-#         # save it
-#         try:
-#             new_credential = self.storage_passwords.create(
-#                 cred_password, cred_name, self.realm)
-#             logging.debug("[-] Updated {}:{}".format(self.realm, cred_name))
-#         except Exception as e:
-#             logging.info(
-#                 "[-] Failed to update {}:{} from password storage. Error Message:  {}".format(self.realm, cred_name, repr(e)))
-#             raise e
 
 
 if sys.platform == "win32":
@@ -94,7 +23,6 @@ logfile = os.sep.join([os.environ['SPLUNK_HOME'], 'var',
 logging.basicConfig(filename=logfile, level=logging.DEBUG)
 
 
-
 def flatten_query_params(params):
     # Query parameters are provided as a list of pairs and can be repeated, e.g.:
     #
@@ -107,48 +35,50 @@ def flatten_query_params(params):
         flattened[i] = flattened.get(i) or j
     return flattened
 
+# # TODO Remove this after making the SplunkStoragePasswords class work for python2+win2012
+# def get_cred_from_password_storage(splunkService, realm, cred_name):
+#     logging.debug("[-] getting...")
+#     storage_passwords = splunkService.storage_passwords
+#     try:
+#         returned_credential = [k for k in storage_passwords if k.content.get(
+#             'realm') == realm and k.content.get('username') == cred_name]
+#     except Exception as e:
+#         logging.info(
+#             "[-] Failed to get {}:{} from password storage. Error Message:  {}".format(realm, cred_name, repr(e)))
+#         raise e
 
-def get_cred_from_password_storage(splunkService, realm, cred_name):
-    logging.debug(
-        "===================get password/storage for {}: {}================".format(realm, cred_name))
-    storage_passwords = splunkService.storage_passwords
-    try:
-        returned_credential = [k for k in storage_passwords if k.content.get(
-            'realm') == realm and k.content.get('username') == cred_name]
-    except Exception as e:
-        logging.info(
-            "[-] Failed to get {}:{} from password storage. Error Message:  {}".format(realm, cred_name, repr(e)))
-        raise e
+#     if len(returned_credential) == 0:
+#         logging.debug("[-] Doesn't exist")
+#         return None
 
-    if len(returned_credential) == 0:
-        return None
+#     else:
+#         returned_credential = returned_credential[0]
+#         return returned_credential.content.get('clear_password')
 
-    else:
-        returned_credential = returned_credential[0]
-        return returned_credential.content.get('clear_password')
+# def delete_cred_from_password_storage(splunkService, realm, cred_name):
+#     logging.debug("[-] deleting...")
+#     if get_cred_from_password_storage(splunkService, realm, cred_name):
+#         try:
+#             splunkService.storage_passwords.delete(cred_name, realm)
+#             logging.debug(
+#                 "[-] Deleted old {}:{}".format(realm, cred_name))
+#         except Exception as e:
+#             logging.info(
+#                 "[-] Failed to delete {}:{} from password storage. Error Message:  {}".format(realm, cred_name, repr(e)))
+#             raise e
 
-def delete_creds_from_password_storage(splunkService, realm, cred_name):
-    if get_cred_from_password_storage(splunkService, realm, cred_name):
-        try:
-            splunkService.storage_passwords.delete(cred_name, realm)
-            logging.debug(
-                "=====Deleted old {}:{}=====".format(realm, cred_name))
-        except Exception as e:
-            logging.info(
-                "[-] Failed to delete {}:{} from password storage. Error Message:  {}".format(realm, cred_name, repr(e)))
-            raise e
-
-def update_creds_from_password_storage(splunkService, realm, cred_name, cred_password):
-    delete_creds_from_password_storage(splunkService, realm, cred_name)
-    # save it
-    try:
-        new_credential = splunkService.storage_passwords.create(
-            cred_password, cred_name, realm)
-        logging.debug("=====Updated {}:{}=====".format(realm, cred_name))
-    except Exception as e:
-        logging.info(
-            "[-] Failed to update {}:{} from password storage. Error Message:  {}".format(realm, cred_name, repr(e)))
-        raise e
+# def update_cred_from_password_storage(splunkService, realm, cred_name, cred_password):
+#     logging.debug("[-] updating...")
+#     delete_cred_from_password_storage(splunkService, realm, cred_name)
+#     # save it
+#     try:
+#         new_credential = splunkService.storage_passwords.create(
+#             cred_password, cred_name, realm)
+#         logging.debug("[-] Updated {}:{}".format(realm, cred_name))
+#     except Exception as e:
+#         logging.info(
+#             "[-] Failed to update {}:{} from password storage. Error Message:  {}".format(realm, cred_name, repr(e)))
+#         raise e
 
 
 class WebexTeamsOauthHandler(PersistentServerConnectionApplication):
@@ -171,17 +101,23 @@ class WebexTeamsOauthHandler(PersistentServerConnectionApplication):
         method = request['method']
         logging.debug('method: {}'.format(method))
 
-        # get session_key & create splunkService
+        # get session_key
         session_key = request['session']['authtoken']
-        splunkService = client.connect(token=session_key, app=SPLUNK_DEST_APP)
-
-        # app_name = 'TA-DP-webex-teams'
+        
+        # define required params
+        app_name = 'TA-DP-webex-teams'
         realm = 'TA-DP-webex-teams-oauth-creds'
         creds_key = "oauth-creds"
-        # splunk_storage_passwords = SplunkStoragePasswords(session_key, realm, app_name)
-        # logging.debug('splunk_storage_passwords: {}'.format(type(splunk_storage_passwords)))
+
+        # create splunkService
+        # splunkService = client.connect(token=session_key, app=SPLUNK_DEST_APP)
+
+        # create a splunk_storage_passwords object
+        my_splunk_storage_passwords = SplunkStoragePasswords(session_key, realm, app_name)
+        logging.info('splunk_storage_passwords: {}'.format(type(my_splunk_storage_passwords)))
 
         if method == "POST":
+            logging.debug('[-] Handling POST request from UI')
             try:
                 form_params = flatten_query_params(request['form'])
                 logging.debug(
@@ -197,21 +133,27 @@ class WebexTeamsOauthHandler(PersistentServerConnectionApplication):
                     "client_id": client_id,
                     "client_secret": client_secret,
                 }
+                # TODO Need to remove 
                 logging.debug("Got from UI -- creds_data -- {}".format(creds_data))
+
                 # save to storage/password endpoint
-                update_creds_from_password_storage(splunkService, realm, creds_key, json.dumps(creds_data))
-                # splunk_storage_passwords.update(creds_key, json.dumps(creds_data))            
-                logging.debug("Save to storage/password endpoint")
+                # update_cred_from_password_storage(splunkService, realm, creds_key, json.dumps(creds_data))
+                my_splunk_storage_passwords.update(creds_key, json.dumps(creds_data))            
+                logging.debug("[-] Save to storage/password endpoint")
+
             except Exception as e:
                 logging.debug("err: {}".format(e))
                 pass
             return {'payload': request, 'status': 200}
         elif method == "GET":
-            # Get the creds from storage/password endpoint
-            logging.debug("======Getting data from storage/password endpoint ...======")
-            creds_dict = get_cred_from_password_storage(splunkService, realm, creds_key)
-            # creds_dict = splunk_storage_passwords.get(creds_key)
+            logging.debug('[-] Handling GET request from Webex Teams Server')
 
+            # Get the creds from storage/password endpoint
+            logging.debug("[-] Getting data from storage/password endpoint ...")
+            # creds_dict = get_cred_from_password_storage(splunkService, realm, creds_key)
+            creds_dict = my_splunk_storage_passwords.get(creds_key)
+
+            # TODO Need to remove
             logging.debug("Got from storage/password -- creds_dict -- {}".format(creds_dict))
             
             if creds_dict:
