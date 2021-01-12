@@ -46,10 +46,6 @@ class ModInputwebex_teams_events(modinput_wrapper.base_modinput.BaseModInput):
         For customized inputs, hard code the arguments here to hide argument detail from users.
         For other input types, arguments should be get from input_module. Defining new input types could be easier.
         """
-        scheme.add_argument(smi.Argument("refresh_token", title="Refresh Token",
-                                         description="",
-                                         required_on_create=True,
-                                         required_on_edit=False))
         scheme.add_argument(smi.Argument("resource", title="Resource",
                                          description="Comma separated list of resources to be fetched",
                                          required_on_create=True,

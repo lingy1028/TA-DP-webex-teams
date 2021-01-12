@@ -34,13 +34,6 @@ fields = [
         )
     ), 
     field.RestField(
-        'refresh_token',
-        required=True,
-        encrypted=False,
-        default='refresh_token_1',
-        validator=None
-    ), 
-    field.RestField(
         'organization_id',
         required=True,
         encrypted=False,

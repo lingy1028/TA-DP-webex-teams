@@ -122,46 +122,6 @@ fields_additional_parameters = [
         )
     ), 
     field.RestField(
-        'refresh_token_1',
-        required=True,
-        encrypted=True,
-        default='',
-        validator=validator.String(
-            min_len=0, 
-            max_len=8192, 
-        )
-    ), 
-    field.RestField(
-        'refresh_token_2',
-        required=False,
-        encrypted=True,
-        default='',
-        validator=validator.String(
-            min_len=0, 
-            max_len=8192, 
-        )
-    ), 
-    field.RestField(
-        'refresh_token_3',
-        required=False,
-        encrypted=True,
-        default='',
-        validator=validator.String(
-            min_len=0, 
-            max_len=8192, 
-        )
-    ), 
-    field.RestField(
-        'refresh_token_4',
-        required=False,
-        encrypted=True,
-        default='',
-        validator=validator.String(
-            min_len=0, 
-            max_len=8192, 
-        )
-    ), 
-    field.RestField(
         'certificate_verification',
         required=False,
         encrypted=False,

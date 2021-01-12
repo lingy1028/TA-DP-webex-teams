@@ -186,76 +186,8 @@
                             "field": "client_secret",
                             "label": "Client Secret",
                             "type": "text",
-                            "help": "",
-                            "required": true,
-                            "defaultValue": "",
-                            "encrypted": true,
-                            "validators": [
-                                {
-                                    "type": "string",
-                                    "minLength": 0,
-                                    "maxLength": 8192,
-                                    "errorMsg": "Max length of password is 8192"
-                                }
-                            ]
-                        },
-                        {
-                            "field": "refresh_token_1",
-                            "label": "Refresh Token 1",
-                            "type": "text",
                             "help": "Generate the Refresh Token by clicking the below button",
                             "required": true,
-                            "defaultValue": "",
-                            "encrypted": true,
-                            "validators": [
-                                {
-                                    "type": "string",
-                                    "minLength": 0,
-                                    "maxLength": 8192,
-                                    "errorMsg": "Max length of password is 8192"
-                                }
-                            ]
-                        },
-                        {
-                            "field": "refresh_token_2",
-                            "label": "Refresh Token 2",
-                            "type": "text",
-                            "help": "Additional Refresh Token",
-                            "required": false,
-                            "defaultValue": "",
-                            "encrypted": true,
-                            "validators": [
-                                {
-                                    "type": "string",
-                                    "minLength": 0,
-                                    "maxLength": 8192,
-                                    "errorMsg": "Max length of password is 8192"
-                                }
-                            ]
-                        },
-                        {
-                            "field": "refresh_token_3",
-                            "label": "Refresh Token 3",
-                            "type": "text",
-                            "help": "Additional Refresh Token",
-                            "required": false,
-                            "defaultValue": "",
-                            "encrypted": true,
-                            "validators": [
-                                {
-                                    "type": "string",
-                                    "minLength": 0,
-                                    "maxLength": 8192,
-                                    "errorMsg": "Max length of password is 8192"
-                                }
-                            ]
-                        },
-                        {
-                            "field": "refresh_token_4",
-                            "label": "Refresh Token 4",
-                            "type": "text",
-                            "help": "Additional Refresh Token",
-                            "required": false,
                             "defaultValue": "",
                             "encrypted": true,
                             "validators": [
@@ -317,10 +249,6 @@
                     {
                         "field": "disabled",
                         "label": "Status"
-                    },
-                    {
-                        "field": "refresh_token",
-                        "label": "Refresh Token"
                     },
                     {
                         "field": "resource",
@@ -408,35 +336,6 @@
                                     "errorMsg": "Length of index name should be between 1 and 80."
                                 }
                             ]
-                        },
-                        {
-                            "field": "refresh_token",
-                            "label": "Refresh Token",
-                            "help": "",
-                            "required": true,
-                            "type": "singleSelect",
-                            "defaultValue": "refresh_token_1",
-                            "options": {
-                                "disableSearch": true,
-                                "autoCompleteFields": [
-                                    {
-                                        "value": "refresh_token_1",
-                                        "label": "Refresh Token 1"
-                                    },
-                                    {
-                                        "value": "refresh_token_2",
-                                        "label": "Refresh Token 2"
-                                    },
-                                    {
-                                        "value": "refresh_token_3",
-                                        "label": "Refresh Token 3"
-                                    },
-                                    {
-                                        "value": "refresh_token_4",
-                                        "label": "Refresh Token 4"
-                                    }
-                                ]
-                            }
                         },
                         {
                             "field": "resource",
@@ -537,35 +436,6 @@
                                     "errorMsg": "Length of index name should be between 1 and 80."
                                 }
                             ]
-                        },
-                        {
-                            "field": "refresh_token",
-                            "label": "Refresh Token",
-                            "help": "",
-                            "required": true,
-                            "type": "singleSelect",
-                            "defaultValue": "refresh_token_1",
-                            "options": {
-                                "disableSearch": true,
-                                "autoCompleteFields": [
-                                    {
-                                        "value": "refresh_token_1",
-                                        "label": "Refresh Token 1"
-                                    },
-                                    {
-                                        "value": "refresh_token_2",
-                                        "label": "Refresh Token 2"
-                                    },
-                                    {
-                                        "value": "refresh_token_3",
-                                        "label": "Refresh Token 3"
-                                    },
-                                    {
-                                        "value": "refresh_token_4",
-                                        "label": "Refresh Token 4"
-                                    }
-                                ]
-                            }
                         },
                         {
                             "field": "organization_id",

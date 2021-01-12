@@ -224,7 +224,8 @@ class WebexTeamsOauthHandler(PersistentServerConnectionApplication):
                             <h1>Permissions Granted!</h1>
                         </div>
                         <div style='word-break: break-all;'>
-                            <h3>Please Copy the Access Token and Refresh Token</h3>
+                            <h3>Successfully Saved Access Token and Refresh Token!</h3>
+                            <h3>Please CLOSE This Page!</h3>
                             <br>
                             <h4>Access Token</h4>
                             <p>{access_token}</p>

@@ -138,8 +138,6 @@ def collect_events(helper, ew):
 
     client_id = helper.get_global_setting('client_id')
     client_secret = helper.get_global_setting('client_secret')
-    # refresh_token_name = helper.get_arg('refresh_token')
-    # refresh_token = helper.get_global_setting(refresh_token_name)
     certificate_verification = True if (helper.get_global_setting('certificate_verification') == 1) else False
 
     message_masking = helper.get_arg('message_masking')
