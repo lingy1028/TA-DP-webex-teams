@@ -4,18 +4,19 @@ import logging
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "lib"))
 import splunklib.client as client
 
-storage_passwords_logfile = os.sep.join([os.environ['SPLUNK_HOME'], 'var',
-                       'log', 'splunk', 'webex_teams_storage_passwords.log'])
-logging.basicConfig(filename=storage_passwords_logfile, level=logging.DEBUG)
+# storage_passwords_logfile = os.sep.join([os.environ['SPLUNK_HOME'], 'var',
+#                        'log', 'splunk', 'webex_teams_storage_passwords.log'])
+# logging.basicConfig(filename=storage_passwords_logfile, level=logging.DEBUG)
 
 # TODO 
 """
 Only work for Python3
 Doesn't work for Python2 in Splunk7.3 + Win2012
-Modify it to make it work for Python2
+Modify it to make it work for Python2 
+--> Modifying it to make it inherit from object fixed the python2 error:  class no attribute '__mro__'
 """
 
-class SplunkStoragePasswords:
+class SplunkStoragePasswords(object):
     """[summary]
     """
     def __init__(self, session_key, realm, app_name):
@@ -31,7 +32,6 @@ class SplunkStoragePasswords:
         self.app_name = app_name
         self.storage_passwords = client.connect(token=session_key, app=app_name).storage_passwords
         
-
     def get(self, cred_name):
         """
         get cred from password storage endpoint

@@ -8,6 +8,8 @@ import datetime
 import time as mytime
 import datetime
 import json
+from lib.get_access_token_helper import get_access_token, update_access_token
+
 
 '''
     IMPORTANT
@@ -126,10 +128,6 @@ def collect_events(helper, ew):
         ew.write_event(event)
     '''
     
-    loglevel = helper.get_log_level()
-    
-    loglevel ="debug"
-    
     proxy_settings = helper.get_proxy()
 
     index = helper.get_output_index()
@@ -140,31 +138,17 @@ def collect_events(helper, ew):
 
     client_id = helper.get_global_setting('client_id')
     client_secret = helper.get_global_setting('client_secret')
-    refresh_token_name = helper.get_arg('refresh_token')
-    refresh_token = helper.get_global_setting(refresh_token_name)
     certificate_verification = True if (helper.get_global_setting('certificate_verification') == 1) else False
     
-    helper.log_debug("certificate_verification: {}".format(certificate_verification))
-    
-    helper.log_debug("client_id: {}".format(client_id))
-    helper.log_debug("refresh_token_name: {}".format(refresh_token_name))
-    
+    # Get access token from storage/password endpoint
+    access_token = get_access_token(helper, client_id, client_secret)
+
+    # TODO Must remove later
+    helper.log_debug("[-] AUDIT EVENTS: access_token: {}".format(access_token))
+
+
     checkpoint_name = "last_run_" + client_id + "_" + helper.get_input_stanza_names()
-    access_token_name = "access_token_" + client_id + "_" + refresh_token_name
-    access_token_expiration_time_name = "access_token_expiration_time_" + client_id + "_" + refresh_token_name
-    
-    helper.log_debug("checkpoint_name: {}".format(checkpoint_name))
-    helper.log_debug("access_token_expiration_time_name (checkpoint): {}".format(access_token_expiration_time_name))
-
-    access_token_url = "https://api.ciscospark.com/v1/access_token" 
-
-    access_token_expiration_time =  helper.get_check_point(access_token_expiration_time_name)
-    access_token =  helper.get_check_point(access_token_name)
-
-    helper.log_debug("access_token_expiration_time (checkpoint): {}".format(access_token_expiration_time))
-    
-    # Used for access token expiry
-    current_run_epoch =  int(mytime.time())*1000
+    helper.log_debug("[-] AUDIT EVENTS: checkpoint_name: {}".format(checkpoint_name))
     
     # Used for checkpointing
     current_run = datetime.datetime.utcnow().isoformat()[:-3] + 'Z'
@@ -176,58 +160,7 @@ def collect_events(helper, ew):
     if last_run is None:
         last_run = current_run
         # We need a small offset as API does not allow this to be the same
-        current_run_epoch =  int(mytime.time())*1000
         current_run = datetime.datetime.utcnow().isoformat()[:-3] + 'Z'
-    
-    # Access Token Management
-
-    if access_token is None or access_token_expiration_time is None or access_token_expiration_time<=current_run_epoch:
-        helper.log_info("Refreshing access_token")
-        helper.log_debug("access_token_expiration_time: {}".format(access_token_expiration_time))
-
-        headers = {
-        'Content-Type' : 'application/x-www-form-urlencoded',
-        'Accept' : 'application/json',
-        'cache-control' : 'no-cache'
-        }
-        
-        payload = 'grant_type=refresh_token&client_id={}&client_secret={}&refresh_token={}'.format(client_id,client_secret,refresh_token)
-    
-        method = "POST"
-
-        helper.log_debug("payload: {}".format(payload))
-
-        response = helper.send_http_request(access_token_url, method, parameters=None, payload=payload, headers=headers, cookies=None, verify=certificate_verification, cert=None, timeout=None, use_proxy=True)
-       
-        response_dict = response.json()
-
-        if response.status_code != 200:
-            helper.log_error("status_code: {}. Exiting.".format(response.status_code))
-            helper.log_error("response: {}".format(response_dict))
-    
-            sys.exit()
-        else:
-            helper.log_info("status_code: {}.".format(response.status_code))
-            helper.log_debug("response: {}".format(response_dict))
-            
-            access_token = response_dict.get("access_token")
-            access_token_expires_in = response_dict.get("expires_in")
-            
-            helper.log_debug("access_token: {}".format(access_token))
-    
-            access_token_expiration_time = current_run_epoch + access_token_expires_in*1000
-            helper.log_debug("current_run_epoch: {}".format(current_run_epoch))
-            helper.log_debug("access_token_expires_in: {}".format(access_token_expires_in))
-            helper.log_debug("access_token_expiration_time: {}".format(access_token_expiration_time))
-            
-            helper.log_info("Storing news access_token_expiration_time")
-            helper.save_check_point(access_token_expiration_time_name, access_token_expiration_time)
-            helper.log_info("Storing new access_token")
-            helper.save_check_point(access_token_name, access_token)
-            
-    else:
-            helper.log_info("Current access_token still valid.")
-
         
     # Fetching Events:
     
@@ -246,8 +179,7 @@ def collect_events(helper, ew):
     
     method = "GET"
     
-    helper.log_debug("headers: {}".format(headers))
-    helper.log_debug("events_url: {}".format(events_url))
+    helper.log_debug("[-] AUDIT EVENTS: events_url: {}".format(events_url))
     
     
     paging = True
@@ -259,20 +191,22 @@ def collect_events(helper, ew):
         response_dict = response.json()
     
         if response.status_code != 200:
-            helper.log_error("status_code: {}. Exiting.".format(response.status_code))
-            helper.log_error("response: {}".format(response_dict))
+            helper.log_error("[-] AUDIT EVENTS: status_code: {}. Exiting.".format(response.status_code))
+            helper.log_error("[-] AUDIT EVENTS: response: {}".format(response_dict))
         
             sys.exit()
             
         else:
-            helper.log_info("status_code: {}.".format(response.status_code))
+            helper.log_info("[-] AUDIT EVENTS: status_code: {}.".format(response.status_code))
 
             response_headers = response.headers
-            helper.log_debug("response_headers: {}.".format(response_headers))
-            helper.log_debug("response_dict: {}.".format(response_dict))
+            helper.log_debug("[-] AUDIT EVENTS: response_headers: {}.".format(response_headers))
+
+            # TODO Must Remove later
+            helper.log_debug("[-] AUDIT EVENTS: response_dict: {}.".format(response_dict))
 
             for data in response_dict.get("items"):
-                helper.log_debug("data: {}".format(json.dumps(data)))
+                # helper.log_debug("data: {}".format(json.dumps(data)))
                 event = helper.new_event(data=json.dumps(data), host=host, index=index, source=source, sourcetype=sourcetype)
                 ew.write_event(event)
 
@@ -282,20 +216,18 @@ def collect_events(helper, ew):
             
             if link is not None and link is not "null":
                 
-                helper.log_debug("link (next): {}.".format(link))
+                helper.log_debug("[-] AUDIT EVENTS: link (next): {}.".format(link))
             
                 events_url = link[2:].replace(r'>; rel=\"next\""','')
-                helper.log_debug("events_url (next): {}.".format(events_url))
+                helper.log_debug("[-] AUDIT EVENTS: events_url (next): {}.".format(events_url))
             
             else:
                 paging = False
-            
-
-            
+                       
     helper.save_check_point(checkpoint_name, current_run)
-    helper.log_info("Storing new checkpoint")
+    helper.log_info("[-] AUDIT EVENTS: Storing new checkpoint")
     
-    helper.log_info("Finished.")
+    helper.log_info("[-] AUDIT EVENTS: Finished.")
     
             
     

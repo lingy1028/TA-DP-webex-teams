@@ -136,10 +136,10 @@ class WebexTeamsOauthHandler(PersistentServerConnectionApplication):
                 # TODO Need to remove 
                 logging.debug("Got from UI -- creds_data -- {}".format(creds_data))
 
-                # save to storage/password endpoint
+                # save creds data into storage/password endpoint
                 # update_cred_from_password_storage(splunkService, realm, creds_key, json.dumps(creds_data))
                 my_splunk_storage_passwords.update(creds_key, json.dumps(creds_data))            
-                logging.debug("[-] Save to storage/password endpoint")
+                logging.debug("[-] Saved creds data into storage/password endpoint")
 
             except Exception as e:
                 logging.debug("err: {}".format(e))
@@ -200,6 +200,25 @@ class WebexTeamsOauthHandler(PersistentServerConnectionApplication):
                         return {'payload': response.text, 'status': 200}
 
                     if resp['access_token'] and resp['refresh_token']:
+
+                        logging.debug('[-] Saving Tokens into storage/password endpoint')
+                    
+                        tokens_key = "oauth_tokens"
+                        tokens_data = {
+                            "access_token": resp['access_token'],
+                            "refresh_token": resp['refresh_token'],
+                            "expires_in": resp['expires_in']                          
+                        }
+
+                        # TODO Need to remove 
+                        logging.debug("Got from API -- tokens -- {}".format(tokens_data))
+
+                        # save tokens into storage/password endpoint
+                        # update_cred_from_password_storage(splunkService, realm, tokens_key, json.dumps(creds_data))
+                        my_splunk_storage_passwords.update(tokens_key, json.dumps(tokens_data))            
+                        logging.debug("[-] Saved tokens into storage/password endpoint")
+                        
+                        # Return information to UI
                         result = '''
                         <div style='width:510px;'>
                             <h1>Permissions Granted!</h1>
@@ -217,9 +236,10 @@ class WebexTeamsOauthHandler(PersistentServerConnectionApplication):
 
                 except Exception as e:
                     logging.debug("Payload error: {}".format(e))
-
+                
                 return {'payload': result, 'status': 200}
-
+                
+               
     def handleStream(self, in_string):
         """
         For future use

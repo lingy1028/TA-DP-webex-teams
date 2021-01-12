@@ -6,9 +6,9 @@ import sys
 import time
 import datetime
 import time as mytime
-import datetime
 import json
 import urllib
+from lib.get_access_token_helper import get_access_token, update_access_token
 
 '''
     IMPORTANT
@@ -127,10 +127,6 @@ def collect_events(helper, ew):
         ew.write_event(event)
     '''
 
-    loglevel = helper.get_log_level()
-    
-    loglevel ="debug"
-    
     proxy_settings = helper.get_proxy()
 
     index = helper.get_output_index()
@@ -142,105 +138,38 @@ def collect_events(helper, ew):
 
     client_id = helper.get_global_setting('client_id')
     client_secret = helper.get_global_setting('client_secret')
-    refresh_token_name = helper.get_arg('refresh_token')
-    refresh_token = helper.get_global_setting(refresh_token_name)
+    # refresh_token_name = helper.get_arg('refresh_token')
+    # refresh_token = helper.get_global_setting(refresh_token_name)
     certificate_verification = True if (helper.get_global_setting('certificate_verification') == 1) else False
-    
-    helper.log_debug("certificate_verification: {}".format(certificate_verification))
-
-    helper.log_debug("client_id: {}".format(client_id))
-    helper.log_debug("refresh_token_name: {}".format(refresh_token_name))
 
     message_masking = helper.get_arg('message_masking')
     fetch_attachment_information = helper.get_arg('fetch_attachment_information')
     fetch_room_information = helper.get_arg('fetch_attachment_information')
     
-    helper.log_debug("message_masking: {}".format(message_masking))
+    # Get access token from storage/password endpoint
+    access_token = get_access_token(helper, client_id, client_secret)
+
+    # TODO Must remove later
+    helper.log_debug("[-] EVENTS: access_token: {}".format(access_token))
 
     checkpoint_name = "last_run_" + client_id + "_" + helper.get_input_stanza_names()
-    access_token_name = "access_token_" + client_id + "_" + refresh_token_name
-    access_token_expiration_time_name = "access_token_expiration_time_" + client_id + "_" + refresh_token_name
     
-    helper.log_debug("checkpoint_name: {}".format(checkpoint_name))
-    helper.log_debug("access_token_name: {}".format(access_token_name))
-    helper.log_debug("access_token_expiration_time_name (checkpoint): {}".format(access_token_expiration_time_name))
-
-    access_token_url = "https://api.ciscospark.com/v1/access_token" 
-
-    access_token_expiration_time =  helper.get_check_point(access_token_expiration_time_name)
-
-    access_token =  helper.get_check_point(access_token_name)
-
-    helper.log_debug("access_token_expiration_time (checkpoint): {}".format(access_token_expiration_time))
-    
-    # Used for access token expiry
-    current_run_epoch =  int(mytime.time())*1000
+    helper.log_debug("[-] EVENTS: checkpoint_name: {}".format(checkpoint_name))
     
     # Used for checkpointing
     current_run = datetime.datetime.utcnow().isoformat()[:-3] + 'Z'
     
     last_run =  helper.get_check_point(checkpoint_name)
-    # Overrride once to get old events
-    #last_run = '2020-05-16T09:34:00.000Z'
+    # # Overrride once to get old events
+    # #last_run = '2020-05-16T09:34:00.000Z'
 
     
     if last_run is None:
         last_run = current_run
         # We need a small offset as API does not allow this to be the same
-        current_run_epoch =  int(mytime.time())*1000
         current_run = datetime.datetime.utcnow().isoformat()[:-3] + 'Z'
+    helper.log_debug("[-] EVENTS: last_run: {}".format(last_run))
 
-    
-    # Access Token Management
-
-    if access_token is None or access_token_expiration_time is None or access_token_expiration_time<=current_run_epoch:
-        helper.log_info("Refreshing access_token")
-        helper.log_debug("access_token_expiration_time: {}".format(access_token_expiration_time))
-
-        headers = {
-        'Content-Type' : 'application/x-www-form-urlencoded',
-        'Accept' : 'application/json',
-        'cache-control' : 'no-cache'
-        }
-        
-        payload = 'grant_type=refresh_token&client_id={}&client_secret={}&refresh_token={}'.format(client_id,client_secret,refresh_token)
-    
-        method = "POST"
-
-        helper.log_debug("payload: {}".format(payload))
-
-        response = helper.send_http_request(access_token_url, method, parameters=None, payload=payload, headers=headers, cookies=None, verify=certificate_verification, cert=None, timeout=None, use_proxy=True)
-       
-        response_dict = response.json()
-
-        if response.status_code != 200:
-            helper.log_error("status_code: {}. Exiting.".format(response.status_code))
-            helper.log_error("response: {}".format(response_dict))
-    
-            sys.exit()
-        else:
-            helper.log_info("status_code: {}.".format(response.status_code))
-            helper.log_debug("response: {}".format(response_dict))
-            
-            access_token = response_dict.get("access_token")
-            access_token_expires_in = response_dict.get("expires_in")
-            
-            helper.log_debug("access_token: {}".format(access_token))
-    
-            access_token_expiration_time = current_run_epoch + access_token_expires_in*1000
-            helper.log_debug("current_run_epoch: {}".format(current_run_epoch))
-            helper.log_debug("access_token_expires_in: {}".format(access_token_expires_in))
-            helper.log_debug("access_token_expiration_time: {}".format(access_token_expiration_time))
-            
-            helper.log_info("Storing new access_token_expiration_time")
-            helper.save_check_point(access_token_expiration_time_name, access_token_expiration_time)
-            helper.log_info("Storing new access_token")
-            helper.save_check_point(access_token_name, access_token)
-            
-    else:
-            helper.log_info("Current access_token still valid.")
-
-        
     # Fetching Events:
     
     #last_run ='2020-07-22T00:00:00.000Z'   
@@ -258,8 +187,7 @@ def collect_events(helper, ew):
     
     method = "GET"
     
-    helper.log_debug("headers: {}".format(headers))
-    helper.log_debug("events_url: {}".format(events_url))
+    helper.log_debug("[-] EVENTS: events_url: {}".format(events_url))
     
     
     paging = True
@@ -271,17 +199,21 @@ def collect_events(helper, ew):
         response_dict = response.json()
     
         if response.status_code != 200:
-            helper.log_error("status_code: {}. Exiting.".format(response.status_code))
-            helper.log_error("response: {}".format(response_dict))
+            helper.log_error("[-] EVENTS: status_code: {}. Exiting.".format(response.status_code))
+
+            #TODO Must remove later
+            helper.log_error("[-] EVENTS: response: {}".format(response_dict))
         
             sys.exit()
             
         else:
-            helper.log_info("status_code: {}.".format(response.status_code))
+            helper.log_info("[-] EVENTS: status_code: {}.".format(response.status_code))
 
             response_headers = response.headers
-            helper.log_debug("response_headers: {}.".format(response_headers))
-            helper.log_error("response: {}".format(response_dict))
+            helper.log_debug("[-] EVENTS: response_headers: {}.".format(response_headers))
+            
+            #TODO Must remove later
+            helper.log_error("[-] EVENTS: response: {}".format(response_dict))
 
             for data in response_dict.get("items"):
                 #helper.log_debug("data: {}".format(json.dumps(data)))
@@ -291,19 +223,19 @@ def collect_events(helper, ew):
                 #############################
                 # Fetch Attachment Information
                 if fetch_attachment_information == True and data["data"].get("files") != None:
-                    helper.log_debug("Found attachment files. Fetching Headers")
+                    helper.log_debug("[-] EVENTS: Found attachment files. Fetching Headers")
                     
                     files = {}
                     for file_url in data["data"].get("files"):
-                        helper.log_debug("File URL: {}".format(file_url))
+                        helper.log_debug("[-] EVENTS: File URL: {}".format(file_url))
                         file_method = "HEAD"
                         file_response = helper.send_http_request(file_url, file_method, parameters=None, payload=None, headers=headers, cookies=None, verify=certificate_verification, cert=None, timeout=None, use_proxy=True)
            
-                        helper.log_debug("File response: {}".format(file_response.status_code))
+                        helper.log_debug("[-] EVENTS: File response: {}".format(file_response.status_code))
 
                         if file_response.status_code == 200:
                             file_response_headers = file_response.headers
-                            helper.log_debug("file response_headers: {}.".format(file_response_headers))
+                            helper.log_debug("[-] EVENTS: file response_headers: {}.".format(file_response_headers))
                             content_disposition =  file_response_headers.get("Content-Disposition")
                             content_encoding =  file_response_headers.get("Content-Encoding")
                             content_length =  file_response_headers.get("Content-Length")
@@ -320,12 +252,12 @@ def collect_events(helper, ew):
                             files.update(files_dict)
                             
                         elif file_response.status_code == 404:
-                            helper.log_error("file status_code: {}. Not found. Skipping.".format(file_response.status_code))
+                            helper.log_error("[-] EVENTS: file status_code: {}. Not found. Skipping.".format(file_response.status_code))
 
                             continue                                 
                             
                         else:
-                            helper.log_error("file status_code: {}. Exiting.".format(file_response.status_code))
+                            helper.log_error("[-] EVENTS: file status_code: {}. Exiting.".format(file_response.status_code))
 
                             sys.exit()    
                             
@@ -337,21 +269,21 @@ def collect_events(helper, ew):
                 # Fetch Room Information
                 if fetch_room_information == True and data["data"].get("roomId") != None and data["data"].get("roomType") == 'group':
                     
-                    helper.log_debug("Found roomId files. Fetching Title")
+                    helper.log_debug("[-] EVENTS: Found roomId files. Fetching Title")
                     
                     roomId = data["data"].get("roomId")
                     
-                    helper.log_debug("roomId: {}".format(roomId))
+                    helper.log_debug("[-] EVENTS: roomId: {}".format(roomId))
                     
                     room_url = 'https://api.ciscospark.com/v1/rooms/{}'.format(roomId)
                     
                     room_method = "GET"
                     room_response = helper.send_http_request(room_url, room_method, parameters=None, payload=None, headers=headers, cookies=None, verify=certificate_verification, cert=None, timeout=None, use_proxy=True)
 
-                    helper.log_debug("Room response: {}".format(room_response.status_code))
+                    helper.log_debug("[-] EVENTS: Room response: {}".format(room_response.status_code))
                     
                     if room_response.status_code >=200 and room_response.status_code <300:
-                        helper.log_debug("Room response: {}".format(room_response.json()))
+                        helper.log_debug("[-] EVENTS: Room response: {}".format(room_response.json()))
                         room_response_dict = room_response.json()
                         
                         room_title = room_response_dict.get("title")
@@ -359,18 +291,14 @@ def collect_events(helper, ew):
 
                         
                     elif room_response.status_code == 404:
-                        helper.log_error("room status_code: {}. Not found. Skipping.".format(room_response.status_code))
+                        helper.log_error("[-] EVENTS: room status_code: {}. Not found. Skipping.".format(room_response.status_code))
                         continue                                 
                             
                     else:
-                        helper.log_error("room status_code: {}. Exiting.".format(room_response.status_code))
+                        helper.log_error("[-] EVENTS: room status_code: {}. Exiting.".format(room_response.status_code))
 
                         sys.exit()
-                    
-                    
-                    
-                    
-                    
+                                     
                 event = helper.new_event(data=json.dumps(data), host=host, index=index, source=source, sourcetype=sourcetype)
                 ew.write_event(event)
 
@@ -380,17 +308,15 @@ def collect_events(helper, ew):
             
             if link is not None and link is not "null":
                 
-                helper.log_debug("link (next): {}.".format(link))
+                helper.log_debug("[-] EVENTS: link (next): {}.".format(link))
             
                 events_url = link[2:].replace(r'>; rel=\"next\""','')
-                helper.log_debug("events_url (next): {}.".format(events_url))
+                helper.log_debug("[-] EVENTS: events_url (next): {}.".format(events_url))
             
             else:
                 paging = False
             
-
-            
     helper.save_check_point(checkpoint_name, current_run)
-    helper.log_info("Storing new checkpoint")
+    helper.log_info("[-] EVENTS: Storing new checkpoint")
             
-    helper.log_info("Finished.")
+    helper.log_info("[-] EVENTS: Finished.")
