@@ -2,7 +2,7 @@
     "meta": {
         "name": "TA-DP-webex-teams",
         "displayName": "Technology Add-on for Webex Teams",
-        "version": "1.0.0",
+        "version": "1.0.2",
         "apiVersion": "3.0.0",
         "restRoot": "TA_DP_webex_teams"
     },
@@ -186,7 +186,7 @@
                             "field": "client_secret",
                             "label": "Client Secret",
                             "type": "text",
-                            "help": "Generate the Refresh Token by clicking the below button",
+                            "help": "Generate the Access Tokens and Refresh Token by clicking the below button",
                             "required": true,
                             "defaultValue": "",
                             "encrypted": true,
