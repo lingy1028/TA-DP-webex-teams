@@ -4,28 +4,17 @@ import logging
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "lib"))
 import splunklib.client as client
 
-# storage_passwords_logfile = os.sep.join([os.environ['SPLUNK_HOME'], 'var',
-#                        'log', 'splunk', 'webex_teams_storage_passwords.log'])
-# logging.basicConfig(filename=storage_passwords_logfile, level=logging.DEBUG)
-
-# TODO 
-"""
-Only work for Python3
-Doesn't work for Python2 in Splunk7.3 + Win2012
-Modify it to make it work for Python2 
---> Modifying it to make it inherit from object fixed the python2 error:  class no attribute '__mro__'
-"""
-
 class SplunkStoragePasswords(object):
-    """[summary]
+    """
+    Used to Retrun a SplunkStoragePasswords object which contains 
+    collection of the storage passwords on this Splunk instance.
     """
     def __init__(self, session_key, realm, app_name):
-        """[summary]
-
+        """
         Args:
-            session_key ([type]): [description]
-            realm ([type]): [description]
-            app_name ([type]): [description]
+            session_key (string): The current session token
+            realm (string): The credential realm
+            app_name (string): The TA's name
         """
         self.session_key = session_key
         self.realm = realm
@@ -41,7 +30,7 @@ class SplunkStoragePasswords(object):
             returned_credential = [k for k in self.storage_passwords if k.content.get(
                 'realm') == self.realm and k.content.get('username') == cred_name]
         except Exception as e:
-            logging.info(
+            logging.error(
                 "[*] Failed to get {}:{} from password storage. Error Message:  {}".format(self.realm, cred_name, repr(e)))
             raise e
 
@@ -64,7 +53,7 @@ class SplunkStoragePasswords(object):
                 logging.debug(
                     "[*] Deleted old {}:{}".format(self.realm, cred_name))
             except Exception as e:
-                logging.info(
+                logging.error(
                     "[*] Failed to delete {}:{} from password storage. Error Message:  {}".format(self.realm, cred_name, repr(e)))
                 raise e
 
@@ -80,7 +69,7 @@ class SplunkStoragePasswords(object):
                 cred_password, cred_name, self.realm)
             logging.debug("[*] Updated {}:{}".format(self.realm, cred_name))
         except Exception as e:
-            logging.info(
+            logging.error(
                 "[*] Failed to update {}:{} from password storage. Error Message:  {}".format(self.realm, cred_name, repr(e)))
             raise e
 

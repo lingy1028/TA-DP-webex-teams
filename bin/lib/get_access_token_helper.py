@@ -60,10 +60,7 @@ def get_access_token(helper, client_id, client_secret):
     # Get the tokens data from storage/password endpoint
     try:
         helper.log_debug("[-] Getting data from storage/password endpoint ...")
-        tokens_data = my_splunk_storage_passwords.get(tokens_key)
-
-        # TODO Need to remove
-        helper.log_debug("[-] Got from storage/password -- tokens_data -- {}".format(tokens_data))  
+        tokens_data = my_splunk_storage_passwords.get(tokens_key) 
         tokens_data = json.loads(tokens_data)
         access_token = tokens_data.get("access_token", None)
         refresh_token = tokens_data.get("refresh_token", None)
@@ -107,8 +104,6 @@ def get_access_token(helper, client_id, client_secret):
                             "expires_in": new_access_token_expires_in                          
                       }
 
-        # TODO Need to remove 
-        helper.log_debug("\t[-] New tokens -- {}".format(tokens_data))
         my_splunk_storage_passwords.update(tokens_key, json.dumps(tokens_data))            
         helper.log_debug("\t[-] Saved tokens into storage/password endpoint")
 

@@ -147,9 +147,6 @@ def collect_events(helper, ew):
     # Get access token from storage/password endpoint
     access_token = get_access_token(helper, client_id, client_secret)
 
-    # TODO Must remove later
-    helper.log_debug("[-] EVENTS: access_token: {}".format(access_token))
-
     checkpoint_name = "last_run_" + client_id + "_" + helper.get_input_stanza_names()
     
     helper.log_debug("[-] EVENTS: checkpoint_name: {}".format(checkpoint_name))
@@ -198,10 +195,7 @@ def collect_events(helper, ew):
     
         if response.status_code != 200:
             helper.log_error("[-] EVENTS: status_code: {}. Exiting.".format(response.status_code))
-
-            #TODO Must remove later
             helper.log_error("[-] EVENTS: response: {}".format(response_dict))
-        
             sys.exit()
             
         else:
@@ -210,8 +204,6 @@ def collect_events(helper, ew):
             response_headers = response.headers
             helper.log_debug("[-] EVENTS: response_headers: {}.".format(response_headers))
             
-            #TODO Must remove later
-            helper.log_error("[-] EVENTS: response: {}".format(response_dict))
 
             for data in response_dict.get("items"):
                 #helper.log_debug("data: {}".format(json.dumps(data)))

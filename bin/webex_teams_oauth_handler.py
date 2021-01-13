@@ -35,52 +35,6 @@ def flatten_query_params(params):
         flattened[i] = flattened.get(i) or j
     return flattened
 
-# # TODO Remove this after making the SplunkStoragePasswords class work for python2+win2012
-# def get_cred_from_password_storage(splunkService, realm, cred_name):
-#     logging.debug("[-] getting...")
-#     storage_passwords = splunkService.storage_passwords
-#     try:
-#         returned_credential = [k for k in storage_passwords if k.content.get(
-#             'realm') == realm and k.content.get('username') == cred_name]
-#     except Exception as e:
-#         logging.info(
-#             "[-] Failed to get {}:{} from password storage. Error Message:  {}".format(realm, cred_name, repr(e)))
-#         raise e
-
-#     if len(returned_credential) == 0:
-#         logging.debug("[-] Doesn't exist")
-#         return None
-
-#     else:
-#         returned_credential = returned_credential[0]
-#         return returned_credential.content.get('clear_password')
-
-# def delete_cred_from_password_storage(splunkService, realm, cred_name):
-#     logging.debug("[-] deleting...")
-#     if get_cred_from_password_storage(splunkService, realm, cred_name):
-#         try:
-#             splunkService.storage_passwords.delete(cred_name, realm)
-#             logging.debug(
-#                 "[-] Deleted old {}:{}".format(realm, cred_name))
-#         except Exception as e:
-#             logging.info(
-#                 "[-] Failed to delete {}:{} from password storage. Error Message:  {}".format(realm, cred_name, repr(e)))
-#             raise e
-
-# def update_cred_from_password_storage(splunkService, realm, cred_name, cred_password):
-#     logging.debug("[-] updating...")
-#     delete_cred_from_password_storage(splunkService, realm, cred_name)
-#     # save it
-#     try:
-#         new_credential = splunkService.storage_passwords.create(
-#             cred_password, cred_name, realm)
-#         logging.debug("[-] Updated {}:{}".format(realm, cred_name))
-#     except Exception as e:
-#         logging.info(
-#             "[-] Failed to update {}:{} from password storage. Error Message:  {}".format(realm, cred_name, repr(e)))
-#         raise e
-
-
 class WebexTeamsOauthHandler(PersistentServerConnectionApplication):
     def __init__(self, _command_line, _command_arg):
         super(PersistentServerConnectionApplication, self).__init__()
@@ -133,16 +87,13 @@ class WebexTeamsOauthHandler(PersistentServerConnectionApplication):
                     "client_id": client_id,
                     "client_secret": client_secret,
                 }
-                # TODO Need to remove 
-                logging.debug("Got from UI -- creds_data -- {}".format(creds_data))
 
                 # save creds data into storage/password endpoint
-                # update_cred_from_password_storage(splunkService, realm, creds_key, json.dumps(creds_data))
                 my_splunk_storage_passwords.update(creds_key, json.dumps(creds_data))            
                 logging.debug("[-] Saved creds data into storage/password endpoint")
 
             except Exception as e:
-                logging.debug("err: {}".format(e))
+                logging.error("err: {}".format(e))
                 pass
             return {'payload': request, 'status': 200}
         elif method == "GET":
@@ -150,12 +101,8 @@ class WebexTeamsOauthHandler(PersistentServerConnectionApplication):
 
             # Get the creds from storage/password endpoint
             logging.debug("[-] Getting data from storage/password endpoint ...")
-            # creds_dict = get_cred_from_password_storage(splunkService, realm, creds_key)
             creds_dict = my_splunk_storage_passwords.get(creds_key)
 
-            # TODO Need to remove
-            logging.debug("Got from storage/password -- creds_dict -- {}".format(creds_dict))
-            
             if creds_dict:
                 try:
                     creds_dict = json.loads(creds_dict)
@@ -167,7 +114,7 @@ class WebexTeamsOauthHandler(PersistentServerConnectionApplication):
                     # get the code from request query params
                     query_params = flatten_query_params(request['query'])
                     code = query_params['code']
-                    logging.debug("code: {}".format(code))
+                    # logging.debug("code: {}".format(code))
 
                     # send POST request to the Webex Teams Server
                     url = "https://webexapis.com/v1/access_token"
@@ -190,11 +137,7 @@ class WebexTeamsOauthHandler(PersistentServerConnectionApplication):
                         "response code -- {}".format(response.status_code))
 
                     status_code = response.status_code
-
                     resp = response.json()
-
-                    logging.debug(
-                        "resp -- {}".format(resp))
 
                     if status_code != 200:
                         return {'payload': response.text, 'status': 200}
@@ -210,11 +153,7 @@ class WebexTeamsOauthHandler(PersistentServerConnectionApplication):
                             "expires_in": resp['expires_in']                          
                         }
 
-                        # TODO Need to remove 
-                        logging.debug("Got from API -- tokens -- {}".format(tokens_data))
-
                         # save tokens into storage/password endpoint
-                        # update_cred_from_password_storage(splunkService, realm, tokens_key, json.dumps(creds_data))
                         my_splunk_storage_passwords.update(tokens_key, json.dumps(tokens_data))            
                         logging.debug("[-] Saved tokens into storage/password endpoint")
                         
@@ -236,7 +175,7 @@ class WebexTeamsOauthHandler(PersistentServerConnectionApplication):
                         ''' .format(access_token=resp['access_token'], refresh_token=resp['refresh_token'])
 
                 except Exception as e:
-                    logging.debug("Payload error: {}".format(e))
+                    logging.error("Payload error: {}".format(e))
                 
                 return {'payload': result, 'status': 200}
                 
