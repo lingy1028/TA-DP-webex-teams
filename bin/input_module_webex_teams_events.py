@@ -151,19 +151,24 @@ def collect_events(helper, ew):
     
     helper.log_debug("[-] EVENTS: checkpoint_name: {}".format(checkpoint_name))
     
-    # Used for checkpointing
-    current_run = datetime.datetime.utcnow().isoformat()[:-3] + 'Z'
-    
     last_run =  helper.get_check_point(checkpoint_name)
     # # Overrride once to get old events
     # #last_run = '2020-05-16T09:34:00.000Z'
 
-    
     if last_run is None:
-        last_run = current_run
+        last_run = datetime.datetime.utcnow().isoformat()[:-3] + 'Z'
         # We need a small offset as API does not allow this to be the same
-        current_run = datetime.datetime.utcnow().isoformat()[:-3] + 'Z'
+        helper.save_check_point(checkpoint_name, last_run)
+        helper.log_debug("[-] EVENTS: Storing first checkpoint")
+    else: 
+        # shift last_run by 1 second
+        last_run = (datetime.datetime.strptime(last_run, '%Y-%m-%dT%H:%M:%S.%fZ') +
+                          datetime.timedelta(seconds=1)).strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
+    
+    current_run = datetime.datetime.utcnow().isoformat()[:-3] + 'Z'
     helper.log_debug("[-] EVENTS: last_run: {}".format(last_run))
+    helper.log_debug("[-] EVENTS: current_run: {}".format(current_run))
+
 
     # Fetching Events:
     
@@ -292,6 +297,19 @@ def collect_events(helper, ew):
                 event = helper.new_event(data=json.dumps(data), host=host, index=index, source=source, sourcetype=sourcetype)
                 ew.write_event(event)
 
+                # Update last_run Checkpoint 
+                # compare checkpoint_time with current event's created time
+                # update checkpoint_time if the currents event's created time larger than checkpoint_time
+                checkpoint_time = helper.get_check_point(checkpoint_name)
+                checkpoint_time = datetime.datetime.strptime(checkpoint_time, '%Y-%m-%dT%H:%M:%S.%fZ')
+                this_event_created_time = datetime.datetime.strptime(data['created'], '%Y-%m-%dT%H:%M:%S.%fZ')
+                helper.log_debug("[-] EVENTS: checkpoint_time vs this_event_created_time: {} vs {}".format(checkpoint_time, this_event_created_time))
+                if this_event_created_time > checkpoint_time:
+                    checkpoint_time = this_event_created_time.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
+                    helper.log_debug("[-] EVENTS: updated checkpoint_time: {}".format(checkpoint_time))
+                    helper.save_check_point(checkpoint_name, checkpoint_time)
+                    helper.log_debug("[-] EVENTS: Storing new checkpoint")
+
             # Handle Paging
             
             link = json.dumps(response_headers.get("Link"))
@@ -305,8 +323,5 @@ def collect_events(helper, ew):
             
             else:
                 paging = False
-            
-    helper.save_check_point(checkpoint_name, current_run)
-    helper.log_info("[-] EVENTS: Storing new checkpoint")
             
     helper.log_info("[-] EVENTS: Finished.")
