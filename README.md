@@ -26,7 +26,7 @@ Additionally to the Refresh Token, the Client ID and Client Secret has to be pro
 
 Multiple Refresh Tokens with different access rights.(up to 4) may be configured and referenced by Inputs.
 
-##### v.1.0.2
+##### v.1.0.3
 In this version, the Add-on integrates the OAuth flow to get the Access Token and a Refresh Token in the configuration phase, and keeps track of the lifetime of the Access Token and automatically refreshes the access token if needed.
 
 #### Create a Webex Teams OAuth Integration App
@@ -137,6 +137,8 @@ Events will be created with the webex:teams:adminaudit:events sourcetype.
   * Fixed in issue with too many token refreshes
 * 2021-01-12
   * Added OAuth flow support
+* 2021-01-14
+  * Changed to use Events created date as checkpoint
   
 ## License
 
