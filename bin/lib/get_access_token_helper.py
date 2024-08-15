@@ -78,10 +78,11 @@ def get_access_token(helper, client_id, client_secret):
 
     # Used for access token expiry
     current_run_epoch =  int(mytime.time())*1000
+    delta_2hour = 2*60*60*1000
     
     # First time 
     if access_token_expiration_time is None:
-        access_token_expiration_time = current_run_epoch + access_token_expires_in*1000
+        access_token_expiration_time = current_run_epoch + access_token_expires_in*1000 - delta_2hour
 
         helper.log_info("[-] Storing news access_token_expiration_time")
         helper.log_debug("[-] access_token_expiration_time: {}".format(access_token_expiration_time))
@@ -104,12 +105,12 @@ def get_access_token(helper, client_id, client_secret):
                             "expires_in": new_access_token_expires_in                          
                       }
 
-        my_splunk_storage_passwords.update(tokens_key, json.dumps(tokens_data))            
+        my_splunk_storage_passwords.update(tokens_key, json.dumps(tokens_data))
         helper.log_debug("\t[-] Saved tokens into storage/password endpoint")
 
         # update access_token_expiration_time checkpoint
         now = int(mytime.time())*1000
-        new_access_token_expiration_time =  now + new_access_token_expires_in*1000
+        new_access_token_expiration_time =  now + new_access_token_expires_in*1000 - delta_2hour
 
         helper.log_debug("\t[-] now: {}".format(now))
         helper.log_debug("\t[-] new_access_token_expires_in: {}".format(new_access_token_expires_in))
