@@ -1,13 +1,33 @@
-document.addEventListener("DOMNodeInserted", function (event) {
+var targetNode = document.body;
 
-    if (event.target.className && event.target.className.startsWith("form-")) {
-        h = event.target.querySelector('.help-block')
-        if (h) {
-            replace_text = "by clicking the below button";
-            h.innerHTML = h.innerHTML.replace(replace_text, "<div><a href='#' class='btn btn-primary' onclick=clickEvent()>Generate Tokens</a>");
+// Options for the observer (which mutations to observe)
+var config = { childList: true, subtree: true };
+
+// Callback function to execute when mutations are observed
+var callback = function(mutationsList, observer) {
+    for (var mutation of mutationsList) {
+        if (mutation.type === 'childList') {
+            mutation.addedNodes.forEach(function(node) {
+                if (node.nodeType === Node.ELEMENT_NODE && node.className && node.className.startsWith("form-")) {
+                    var h = node.querySelector('.help-block');
+                    if (h) {
+                        var replace_text = "by clicking the below button";
+                        h.innerHTML = h.innerHTML.replace(
+                            replace_text,
+                            "<div><a href='#' class='btn btn-primary' onclick='clickEvent()'>Generate Tokens</a></div>"
+                        );
+                    }
+                }
+            });
         }
     }
-}, false);
+};
+
+// Create an observer instance linked to the callback function
+var observer = new MutationObserver(callback);
+
+// Start observing the target node for configured mutations
+observer.observe(targetNode, config);
 
 function clickEvent() {
     let client_id = getInputValue('additional_parameters-client_id')
