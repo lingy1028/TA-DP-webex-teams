@@ -139,6 +139,9 @@ Events will be created with the webex:teams:adminaudit:events sourcetype.
   * Added OAuth flow support
 * 2021-01-14
   * Changed to use Events created date as checkpoint
+* 2024-08-15
+  * Fixed `DOMNodeInserted` event deprecation by replacing it with `MutationObserver`
+  * Advanced access_token_expiration_time by 2 hours to make update access token 2 hours before it expired
   
 ## License
 
