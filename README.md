@@ -53,6 +53,7 @@ An integration is what you'd have to use if you have Single Sign-On (SSO) or OAu
        - Spark:all
        - Audit:events_read
        - Spark-compliance:events_read
+       - Spark-compliance:rooms_read
 - Click on `Add Integration` button.
 - Please copy the `Client ID` and `Client Secret` somewhere for further use.
 

@@ -171,8 +171,10 @@ class WebexTeamsOauthHandler(PersistentServerConnectionApplication):
                             <br>
                             <h4>Refresh Token</h4>
                             <p>{refresh_token}</p>
+                            <h4>Scope</h4>
+                            <p>{scope}</p>
                         </div>
-                        ''' .format(access_token=resp['access_token'], refresh_token=resp['refresh_token'])
+                        ''' .format(access_token=resp['access_token'], refresh_token=resp['refresh_token'], scope=resp['scope'])
 
                 except Exception as e:
                     logging.error("Payload error: {}".format(e))

@@ -52,7 +52,7 @@ function clickEvent() {
     console.log("encode_redirect_uri", encode_redirect_uri)
     console.log("client_id", client_id)
     console.log("client_secret", client_secret)
-    url = `https://webexapis.com/v1/authorize?client_id=${client_id}&response_type=code&redirect_uri=${encode_redirect_uri}&scope=spark%3Akms%20audit%3Aevents_read%20spark-compliance%3Aevents_read&state=set_state_here`
+    url = `https://webexapis.com/v1/authorize?client_id=${client_id}&response_type=code&redirect_uri=${encode_redirect_uri}&scope=spark%3Aall%20spark%3Akms%20audit%3Aevents_read%20spark-compliance%3Aevents_read%20spark-compliance%3Arooms_read&state=set_state_here`
     console.log("Clicked URL : " + url);
     window.open(url, 'popup', 'width=700,height=700');
     return false;
