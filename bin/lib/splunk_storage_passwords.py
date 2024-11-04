@@ -1,7 +1,7 @@
 import os
 import sys
 import logging
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "lib"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__)))
 import splunklib.client as client
 
 class SplunkStoragePasswords(object):

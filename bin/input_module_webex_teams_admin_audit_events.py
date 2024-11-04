@@ -141,7 +141,11 @@ def collect_events(helper, ew):
     certificate_verification = True if (helper.get_global_setting('certificate_verification') == 1) else False
     
     # Get access token from storage/password endpoint
-    access_token = get_access_token(helper, client_id, client_secret)
+    access_token, refresh_token = get_access_token(helper, client_id, client_secret)
+    helper.log_debug("[-] AUDIT EVENTS: client_id: {}".format(client_id))
+    helper.log_debug("[-] AUDIT EVENTS: client_secret: {}".format(client_secret))
+    helper.log_debug("[-] AUDIT EVENTS: access_token: {}".format(access_token))
+    helper.log_debug("[-] AUDIT EVENTS: refresh_token: {}".format(refresh_token))
 
     checkpoint_name = "last_run_" + client_id + "_" + helper.get_input_stanza_names()
     helper.log_debug("[-] AUDIT EVENTS: checkpoint_name: {}".format(checkpoint_name))
@@ -189,9 +193,17 @@ def collect_events(helper, ew):
     while paging == True:
 
         response = helper.send_http_request(events_url, method, parameters=None, payload=None, headers=headers, cookies=None, verify=certificate_verification, cert=None, timeout=None, use_proxy=True)
-           
+
+        # refresh the access token if status code is 401
+        if response.status_code == 401:
+            helper.log_warning("[-] AUDIT EVENTS: status_code: {}. Got 401 error. The Access token may expired. Refreshing the token.".format(response.status_code))
+            new_access_token, new_refresh_token, new_access_token_expires_in = update_access_token(helper, client_id, client_secret, refresh_token)
+            # update the header with the new access_token
+            headers['Authorization'] = 'Bearer {}'.format(new_access_token)
+            response = helper.send_http_request(events_url, method, parameters=None, payload=None, headers=headers, cookies=None, verify=certificate_verification, cert=None, timeout=None, use_proxy=True)
+
         response_dict = response.json()
-    
+
         if response.status_code != 200:
             helper.log_error("[-] AUDIT EVENTS: status_code: {}. Exiting.".format(response.status_code))
             helper.log_error("[-] AUDIT EVENTS: response: {}".format(response_dict))

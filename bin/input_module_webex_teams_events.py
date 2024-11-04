@@ -145,10 +145,13 @@ def collect_events(helper, ew):
     fetch_room_information = helper.get_arg('fetch_attachment_information')
     
     # Get access token from storage/password endpoint
-    access_token = get_access_token(helper, client_id, client_secret)
+    access_token,refresh_token = get_access_token(helper, client_id, client_secret)
+    helper.log_debug("[-] EVENTS: client_id: {}".format(client_id))
+    helper.log_debug("[-] EVENTS: client_secret: {}".format(client_secret))
+    helper.log_debug("[-] EVENTS: access_token: {}".format(access_token))
+    helper.log_debug("[-] EVENTS: refresh_token: {}".format(refresh_token))
 
     checkpoint_name = "last_run_" + client_id + "_" + helper.get_input_stanza_names()
-    
     helper.log_debug("[-] EVENTS: checkpoint_name: {}".format(checkpoint_name))
     
     last_run =  helper.get_check_point(checkpoint_name)
@@ -195,7 +198,15 @@ def collect_events(helper, ew):
     while paging == True:
 
         response = helper.send_http_request(events_url, method, parameters=None, payload=None, headers=headers, cookies=None, verify=certificate_verification, cert=None, timeout=None, use_proxy=True)
-           
+
+        # refresh the access token if status code is 401
+        if response.status_code == 401:
+            helper.log_warning("[-] EVENTS: status_code: {}. Got 401 error. The Access token may expired. Refreshing the token.".format(response.status_code))
+            new_access_token, new_refresh_token, new_access_token_expires_in = update_access_token(helper, client_id, client_secret, refresh_token)
+            # update the header with the new access_token
+            headers['Authorization'] = 'Bearer {}'.format(new_access_token)
+            response = helper.send_http_request(events_url, method, parameters=None, payload=None, headers=headers, cookies=None, verify=certificate_verification, cert=None, timeout=None, use_proxy=True)
+
         response_dict = response.json()
     
         if response.status_code != 200:
@@ -225,7 +236,7 @@ def collect_events(helper, ew):
                         helper.log_debug("[-] EVENTS: File URL: {}".format(file_url))
                         file_method = "HEAD"
                         file_response = helper.send_http_request(file_url, file_method, parameters=None, payload=None, headers=headers, cookies=None, verify=certificate_verification, cert=None, timeout=None, use_proxy=True)
-           
+
                         helper.log_debug("[-] EVENTS: File response: {}".format(file_response.status_code))
 
                         if file_response.status_code == 200:
@@ -293,7 +304,7 @@ def collect_events(helper, ew):
                         helper.log_error("[-] EVENTS: room status_code: {}. Exiting.".format(room_response.status_code))
 
                         sys.exit()
-                                     
+
                 event = helper.new_event(data=json.dumps(data), host=host, index=index, source=source, sourcetype=sourcetype)
                 ew.write_event(event)
 
