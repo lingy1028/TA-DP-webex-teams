@@ -2,7 +2,7 @@
     "meta": {
         "name": "TA-DP-webex-teams",
         "displayName": "Technology Add-on for Webex Teams",
-        "version": "1.0.3",
+        "version": "1.0.4",
         "apiVersion": "3.0.0",
         "restRoot": "TA_DP_webex_teams"
     },

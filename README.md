@@ -2,7 +2,7 @@
 
 Authors: Datapunctum GmbH
 Description: Webex Teams Modular Input
-Version: 1.0.3
+Version: 1.0.4
 
 ## Introduction
 
@@ -28,6 +28,9 @@ Multiple Refresh Tokens with different access rights.(up to 4) may be configured
 
 ##### v.1.0.3
 In this version, the Add-on integrates the OAuth flow to get the Access Token and a Refresh Token in the configuration phase, and keeps track of the lifetime of the Access Token and automatically refreshes the access token if needed.
+
+##### v.1.0.4
+In this version, the Add-on integrates automatically refreshes the access token if the API request returns the 401 error.
 
 #### Create a Webex Teams OAuth Integration App
 
